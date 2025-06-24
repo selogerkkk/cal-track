@@ -479,11 +479,11 @@ class UIManager {
     
     if (entries.length === 0) {
       document.getElementById('streak').textContent = '0';
-      document.getElementById('totalProgress').textContent = '0.0 kg';
-      document.getElementById('avgWeekly').textContent = '0.0 kg';
-      document.getElementById('daysToGoal').textContent = '0';
-      document.getElementById('realTDEE').textContent = 'N/A';
-      document.getElementById('metabolicAdaptation').textContent = 'N/A';
+      document.getElementById('totalProgress').textContent = '📝 Adicione registros';
+      document.getElementById('avgWeekly').textContent = '📊 Sem dados';
+      document.getElementById('daysToGoal').textContent = '⏳ Registre seu peso';
+      document.getElementById('realTDEE').textContent = '💡 Precisa de calorias';
+      document.getElementById('metabolicAdaptation').textContent = '📈 Aguardando dados';
       return;
     }
 
@@ -497,19 +497,49 @@ class UIManager {
     document.getElementById('totalProgress').textContent = `${totalProgress.toFixed(1)} kg`;
 
     const weeklyAvg = CalculationEngine.calculateWeeklyAverage(entries);
-    document.getElementById('avgWeekly').textContent = `${weeklyAvg.toFixed(2)} kg`;
+    if (entries.length < 2) {
+      document.getElementById('avgWeekly').textContent = '📊 Precisa mais registros';
+    } else if (weeklyAvg === 0) {
+      document.getElementById('avgWeekly').textContent = '📈 Sem tendência ainda';
+    } else {
+      document.getElementById('avgWeekly').textContent = `${weeklyAvg.toFixed(2)} kg`;
+    }
 
     const targetWeight = parseFloat(document.getElementById('targetWeight').value) || 70;
     const daysToGoal = CalculationEngine.calculateDaysToGoal(entries, targetWeight);
-    document.getElementById('daysToGoal').textContent = daysToGoal;
+    if (entries.length < 2) {
+      document.getElementById('daysToGoal').textContent = '⏳ Registre mais dias';
+    } else if (daysToGoal === '∞') {
+      document.getElementById('daysToGoal').textContent = '🔄 Sem tendência';
+    } else {
+      document.getElementById('daysToGoal').textContent = daysToGoal;
+    }
 
     // TDEE real e adaptação metabólica
     const userProfile = DataManager.loadUserProfile();
     const realTDEEData = CalculationEngine.calculateRealTDEE(entries);
-    document.getElementById('realTDEE').textContent = realTDEEData.tdee ? `${realTDEEData.tdee} kcal` : 'N/A';
+    
+    // Mensagens específicas baseadas na quantidade de dados
+    const entriesWithCalories = entries.filter(e => e.calories && e.calories > 0);
+    
+    if (realTDEEData.tdee) {
+      document.getElementById('realTDEE').textContent = `${realTDEEData.tdee} kcal`;
+    } else if (entriesWithCalories.length === 0) {
+      document.getElementById('realTDEE').textContent = '💡 Registre calorias também';
+    } else if (entriesWithCalories.length < CONFIG.MIN_DAYS_FOR_TDEE) {
+      document.getElementById('realTDEE').textContent = `📊 ${entriesWithCalories.length}/${CONFIG.MIN_DAYS_FOR_TDEE} dias c/ calorias`;
+    } else {
+      document.getElementById('realTDEE').textContent = '⏳ Aguardando mais dados';
+    }
     
     const adaptation = CalculationEngine.calculateMetabolicAdaptation(entries, userProfile);
-    document.getElementById('metabolicAdaptation').textContent = adaptation ? `${adaptation}%` : 'N/A';
+    if (adaptation !== null) {
+      document.getElementById('metabolicAdaptation').textContent = `${adaptation}%`;
+    } else if (entriesWithCalories.length < CONFIG.MIN_DAYS_FOR_TDEE) {
+      document.getElementById('metabolicAdaptation').textContent = '📈 Precisa mais dados';
+    } else {
+      document.getElementById('metabolicAdaptation').textContent = '🔄 Calculando...';
+    }
 
     // Atualizar gráfico
     ChartManager.drawProgressChart(entries);
@@ -726,14 +756,13 @@ class AppController {
       this.saveDailyEntry();
     });
 
-    // Auto-calcular e salvar perfil quando valores mudam
+    // Salvar perfil quando valores mudam (sem auto-calcular)
     let timeoutId;
     document.querySelectorAll('#weightForm input, #weightForm select').forEach(input => {
       input.addEventListener('input', () => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           if (this.hasRequiredFields()) {
-            this.calcular();
             this.saveUserProfile();
           }
         }, 500);
@@ -821,6 +850,11 @@ class AppController {
     const deficitDiario = parseInt(document.getElementById('deficit').value);
     const fatorAtividade = parseFloat(document.getElementById('activity').value);
 
+    // Limpar resultados anteriores
+    const output = document.getElementById('output');
+    output.style.display = 'none';
+    output.innerHTML = '';
+
     // Validações
     if (!pesoAtual || !pesoAlvo || !altura || !idade) {
       alert('Por favor, preencha todos os campos obrigatórios.');
@@ -840,8 +874,15 @@ class AppController {
     const isPerda = diferencaPeso > 0;
     const tipoObjetivo = isPerda ? 'Perda' : 'Ganho';
 
-    // Calcular projeções
-    const mudancaPorSemana = deficitDiario * 7 / CONFIG.CALORIES_PER_KG;
+    // Calcular projeções baseadas no TDEE real
+    // Para perda: déficit positivo (comer menos que TDEE)
+    // Para ganho: superávit positivo (comer mais que TDEE)
+    const caloriasDiariasAlvo = tdee + (isPerda ? -deficitDiario : deficitDiario);
+    const deficitRealDiario = Math.abs(tdee - caloriasDiariasAlvo);
+    const mudancaPorSemana = (deficitRealDiario * 7) / CONFIG.CALORIES_PER_KG;
+    
+    // Para ganho de peso, a mudança deve ser positiva
+    const mudancaPorSemanaFinal = isPerda ? -mudancaPorSemana : mudancaPorSemana;
     const semanasNecessarias = Math.abs(diferencaPeso) / mudancaPorSemana;
     const mesesNecessarios = semanasNecessarias / 4.33;
 
@@ -849,8 +890,6 @@ class AppController {
     const hoje = new Date();
     const dataFinal = new Date(hoje.getTime());
     dataFinal.setDate(hoje.getDate() + Math.round(semanasNecessarias * 7));
-
-    const output = document.getElementById('output');
 
     if (Math.abs(diferencaPeso) < 0.1) {
       output.innerHTML = `
@@ -868,50 +907,61 @@ class AppController {
       <div class="result-header">
         📊 ${tipoObjetivo} de Peso - Plano Personalizado
       </div>
-      
-      <div class="result-line">
-        <span class="result-label">⏱️ Tempo estimado:</span>
-        <span class="result-value">${Math.ceil(semanasNecessarias)} semanas (${mesesNecessarios.toFixed(1)} meses)</span>
+       <!-- Seção: Projeções -->
+        <div class="result-section" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+          <h4 style="color: #1976d2;">🎯 Projeções</h4>
+          <div class="result-line">
+            <span class="result-label">⏱️ Tempo estimado:</span>
+            <span class="result-value">${Math.ceil(semanasNecessarias)} semanas (${mesesNecessarios.toFixed(1)} meses)</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">📅 Data estimada:</span>
+            <span class="result-value">${dataFinal.toLocaleDateString('pt-BR')}</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">⚖️ Mudança por semana:</span>
+            <span class="result-value">${mudancaPorSemanaFinal.toFixed(2)} kg</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">📈 Mudança por mês:</span>
+            <span class="result-value">${(mudancaPorSemanaFinal * 4.33).toFixed(2)} kg</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">🏁 Mudança total:</span>
+            <span class="result-value">${Math.abs(diferencaPeso).toFixed(1)} kg (${((Math.abs(diferencaPeso) / pesoAtual) * 100).toFixed(1)}%)</span>
+          </div>
+        </div>
       </div>
-      
-      <div class="result-line">
-        <span class="result-label">📅 Data estimada:</span>
-        <span class="result-value">${dataFinal.toLocaleDateString('pt-BR')}</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">⚖️ Mudança por semana:</span>
-        <span class="result-value">${mudancaPorSemana.toFixed(2)} kg</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">📈 Mudança por mês:</span>
-        <span class="result-value">${(mudancaPorSemana * 4.33).toFixed(2)} kg</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">🎯 Mudança total:</span>
-        <span class="result-value">${Math.abs(diferencaPeso).toFixed(1)} kg (${((Math.abs(diferencaPeso) / pesoAtual) * 100).toFixed(1)}%)</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">🔥 Sua TMB:</span>
-        <span class="result-value">${bmr.toFixed(0)} kcal/dia</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">💪 Seu TDEE:</span>
-        <span class="result-value">${tdee.toFixed(0)} kcal/dia</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">🍽️ Calorias diárias alvo:</span>
-        <span class="result-value">${(tdee - (isPerda ? deficitDiario : -deficitDiario)).toFixed(0)} kcal/dia</span>
-      </div>
-      
-      <div class="result-line">
-        <span class="result-label">📊 IMC atual → alvo:</span>
-        <span class="result-value">${imcAtual.toFixed(1)} → ${imcAlvo.toFixed(1)} kg/m²</span>
+      <div class="results-grid">
+        <!-- Seção: Dados Metabólicos -->
+        <div class="result-section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+          <h4 style="color: #495057;">⚡ Seu Metabolismo</h4>
+          <div class="result-line">
+            <span class="result-label">🔥 Taxa Metabólica Basal (TMB):</span>
+            <span class="result-value">${bmr.toFixed(0)} kcal/dia</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">💪 Gasto Total Diário (TDEE):</span>
+            <span class="result-value">${tdee.toFixed(0)} kcal/dia</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">🍽️ Calorias para ${isPerda ? 'perder' : 'ganhar'} peso:</span>
+            <span class="result-value">${caloriasDiariasAlvo.toFixed(0)} kcal/dia</span>
+          </div>
+          <div class="result-line">
+            <span class="result-label">${isPerda ? '🔻' : '🔺'} ${isPerda ? 'Déficit' : 'Superávit'} calórico:</span>
+            <span class="result-value">${deficitRealDiario} kcal/dia</span>
+          </div>
+        </div>    
+      <!-- Seção: Indicadores de Saúde -->
+      <div class="results-grid single-column">
+        <div class="result-section" style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+          <h4 style="color: #7b1fa2;">📊 Indicadores de Saúde</h4>
+          <div class="result-line">
+            <span class="result-label">📏 IMC atual → alvo:</span>
+            <span class="result-value">${imcAtual.toFixed(1)} → ${imcAlvo.toFixed(1)} kg/m²</span>
+          </div>
+        </div>
       </div>
       
       <div class="progress-bar">
