@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora Inteligente de Peso</title>
+  <meta name="description" content="Calculadora avançada de peso com análise de TDEE real, adaptação metabólica e histórico personalizado.">
+  <meta name="keywords" content="calculadora peso, TDEE, perda peso, ganho peso, IMC, metabolismo">
+  <meta name="author" content="Weight Tracker App">
+  
+  <!-- External Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+  
+  <!-- Application Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🎯 Calculadora Inteligente de Peso</h1>
+      <p class="subtitle">Com histórico e adaptação automática baseada em dados reais</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTab('calculator')">📊 Calculadora</button>
+      <button class="tab-button" onclick="showTab('progress')">📈 Progresso</button>
+      <button class="tab-button" onclick="showTab('history')">📋 Histórico</button>
+    </div>
+
+    <!-- Calculator Tab -->
+    <div id="calculator" class="tab-content active">
+      <form id="weightForm">
+        <div class="two-column">
+          <div class="form-group">
+            <label for="currentWeight">Peso Atual</label>
+            <div class="input-group">
+              <input type="number" id="currentWeight" value="75.0" step="0.1" min="30" max="300" required/>
+              <span class="unit">kg</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="targetWeight">Peso Alvo</label>
+            <div class="input-group">
+              <input type="number" id="targetWeight" value="70.1" step="0.1" min="30" max="300" required/>
+              <span class="unit">kg</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-column">
+          <div class="form-group">
+            <label for="height">Altura</label>
+            <div class="input-group">
+              <input type="number" id="height" value="175" step="1" min="120" max="220" required/>
+              <span class="unit">cm</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="age">Idade</label>
+            <div class="input-group">
+              <input type="number" id="age" value="30" step="1" min="15" max="80" required/>
+              <span class="unit">anos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Sexo</label>
+          <select id="gender" required>
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="deficit">Estratégia de Déficit/Superávit</label>
+          <select id="deficit" required>
+            <option value="250">Muito Conservador (250 kcal/dia) - Mais sustentável</option>
+            <option value="300">Leve (300 kcal/dia) - Recomendado para iniciantes</option>
+            <option value="500" selected>Moderado (500 kcal/dia) - Padrão ouro</option>
+            <option value="700">Agressivo (700 kcal/dia) - Requer disciplina</option>
+            <option value="1000">Muito Agressivo (1000 kcal/dia) - Apenas com supervisão</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="activity">Nível de Atividade Física</label>
+          <select id="activity" required>
+            <option value="1.2">Sedentário (sem exercícios)</option>
+            <option value="1.375">Levemente ativo (exercícios leves 1-3x/semana)</option>
+            <option value="1.55" selected>Moderadamente ativo (exercícios moderados 3-5x/semana)</option>
+            <option value="1.725">Muito ativo (exercícios intensos 6-7x/semana)</option>
+            <option value="1.9">Extremamente ativo (exercícios intensos 2x/dia)</option>
+          </select>
+        </div>
+
+        <button type="submit">🚀 Calcular Projeção</button>
+      </form>
+
+      <div id="output" class="results" style="display: none;"></div>
+    </div>
+
+    <!-- Progress Tab -->
+    <div id="progress" class="tab-content">
+      <div class="daily-entry">
+        <h3>📝 Registro Diário</h3>
+        <form id="dailyForm">
+          <div class="two-column">
+            <div class="form-group">
+              <label for="dailyWeight">Peso de Hoje</label>
+              <div class="input-group">
+                <input type="number" id="dailyWeight" step="0.1" min="30" max="300" required/>
+                <span class="unit">kg</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dailyDate">Data</label>
+              <input type="date" id="dailyDate" required/>
+            </div>
+          </div>
+
+          <div class="two-column">
+            <div class="form-group">
+              <label for="dailyCalories">Calorias Consumidas (opcional)</label>
+              <div class="input-group">
+                <input type="number" id="dailyCalories" step="1" min="500" max="5000" placeholder="Ex: 2000"/>
+                <span class="unit">kcal</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="dailyActivity">Atividade do Dia</label>
+              <select id="dailyActivity">
+                <option value="">Não informado</option>
+                <option value="sedentary">Sedentário</option>
+                <option value="light">Leve (caminhada)</option>
+                <option value="moderate">Moderado (treino 30-60min)</option>
+                <option value="intense">Intenso (treino >60min)</option>
+                <option value="double">Duplo (2+ treinos)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="dailyNotes">Como foi o dia? (opcional)</label>
+            <textarea id="dailyNotes" rows="2" placeholder="Ex: Treino intenso, comeu fora, stress no trabalho..."></textarea>
+          </div>
+          
+          <button type="submit">💾 Salvar Registro</button>
+        </form>
+      </div>
+
+      <!-- Statistics Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value" id="streak">0</span>
+          <div class="stat-label">Dias consecutivos</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="totalProgress">0.0 kg</span>
+          <div class="stat-label">Progresso total</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="avgWeekly">0.0 kg</span>
+          <div class="stat-label">Média semanal</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="daysToGoal">0</span>
+          <div class="stat-label">Dias restantes</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="realTDEE">0</span>
+          <div class="stat-label">TDEE Real</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="metabolicAdaptation">0%</span>
+          <div class="stat-label">Adaptação Metabólica</div>
+        </div>
+      </div>
+
+      <!-- Progress Chart -->
+      <div class="progress-chart">
+        <h4>📈 Gráfico de Progresso</h4>
+        <canvas id="progressChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="history" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3>📋 Histórico de Registros</h3>
+        <button onclick="exportData()" style="width: auto; padding: 0.5rem 1rem; margin: 0;">💾 Exportar</button>
+      </div>
+      <div id="historyList">
+        <p class="text-center text-muted" style="padding: 2rem;">
+          Nenhum registro encontrado. Comece registrando seu peso na aba de Progresso!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html> 
