@@ -25,6 +25,7 @@
     <!-- Navigation Tabs -->
     <div class="tabs">
       <button class="tab-button active" onclick="showTab('calculator')">📊 Calculadora</button>
+      <button class="tab-button" onclick="showTab('macros')">🍽️ Macros</button>
       <button class="tab-button" onclick="showTab('progress')">📈 Progresso</button>
       <button class="tab-button" onclick="showTab('history')">📋 Histórico</button>
     </div>
@@ -102,6 +103,59 @@
       </form>
 
       <div id="output" class="results" style="display: none;"></div>
+    </div>
+
+    <!-- Macros Tab -->
+    <div id="macros" class="tab-content">
+      <div class="macro-config">
+        <h3>🍽️ Configuração de Macronutrientes</h3>
+        
+        <div class="form-group">
+          <label for="macroGoal">Objetivo</label>
+          <select id="macroGoal" onchange="AppController.updateMacros()">
+            <option value="maintenance">Manutenção</option>
+            <option value="cutting">Cutting (Perda de Peso)</option>
+            <option value="bulking">Bulking (Ganho de Peso)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="macroStyle">Estilo de Dieta</label>
+          <select id="macroStyle" onchange="AppController.updateMacros()">
+            <option value="balanced">Balanceada (30p/35g/35c)</option>
+            <option value="lowcarb">Low Carb (40p/40g/20c)</option>
+            <option value="highcarb">High Carb (30p/20g/50c)</option>
+            <option value="keto">Keto (35p/60g/5c)</option>
+            <option value="custom">Personalizada</option>
+          </select>
+        </div>
+
+        <div id="customMacros" style="display: none;">
+          <div class="three-column">
+            <div class="form-group">
+              <label for="proteinPercent">Proteína (%)</label>
+              <input type="number" id="proteinPercent" min="10" max="50" value="30" onchange="AppController.updateMacros()"/>
+            </div>
+            <div class="form-group">
+              <label for="fatPercent">Gordura (%)</label>
+              <input type="number" id="fatPercent" min="15" max="70" value="35" onchange="AppController.updateMacros()"/>
+            </div>
+            <div class="form-group">
+              <label for="carbPercent">Carboidrato (%)</label>
+              <input type="number" id="carbPercent" min="5" max="70" value="35" onchange="AppController.updateMacros()"/>
+            </div>
+          </div>
+          <div class="percentage-warning" id="percentageWarning" style="display: none;">
+            <small style="color: #dc3545;">⚠️ A soma deve ser 100%</small>
+          </div>
+        </div>
+      </div>
+
+      <div id="macroResults" class="macro-results">
+        <p class="text-center text-muted" style="padding: 2rem;">
+          Configure seus dados na aba Calculadora primeiro para ver as recomendações de macros!
+        </p>
+      </div>
     </div>
 
     <!-- Progress Tab -->

@@ -199,6 +199,13 @@ button:active {
   gap: 1rem;
 }
 
+/* Layout em Três Colunas */
+.three-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
 /* Melhorias para formulários em PC */
 @media (min-width: 768px) {
   .form-group {
@@ -206,6 +213,10 @@ button:active {
   }
   
   .two-column {
+    gap: 2rem;
+  }
+  
+  .three-column {
     gap: 2rem;
   }
   
@@ -233,6 +244,101 @@ button:active {
   background: #f8f9fa;
   border-radius: 12px;
   border-left: 4px solid #28a745;
+}
+
+/* Seção de Macros */
+.macro-config {
+  margin-bottom: 2rem;
+}
+
+.macro-results {
+  margin-top: 2rem;
+}
+
+.macro-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.macro-card h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.macro-item {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 2px solid #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.macro-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border-color: #667eea;
+}
+
+.macro-item h5 {
+  margin: 0 0 1rem 0;
+  color: #667eea;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.macro-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0.5rem 0;
+}
+
+.macro-unit {
+  font-size: 1rem;
+  color: #7f8c8d;
+  font-weight: normal;
+}
+
+.macro-percentage {
+  font-size: 1rem;
+  color: #667eea;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.calories-info {
+  background: #e3f2fd;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border-left: 4px solid #2196f3;
+}
+
+.calories-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1976d2;
+  font-size: 1.2rem;
+}
+
+.calories-info p {
+  margin: 0;
+  color: #424242;
+  line-height: 1.5;
 }
 
 .result-header {
@@ -467,6 +573,10 @@ button:active {
   }
   
   .two-column {
+    grid-template-columns: 1fr;
+  }
+  
+  .three-column {
     grid-template-columns: 1fr;
   }
   

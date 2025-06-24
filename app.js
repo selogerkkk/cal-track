@@ -610,6 +610,8 @@ class UIManager {
       this.updateProgress();
     } else if (tabName === 'history') {
       this.loadHistory();
+    } else if (tabName === 'macros') {
+      this.updateMacros();
     }
   }
 
@@ -976,6 +978,136 @@ class AppController {
     `;
 
     output.style.display = 'block';
+  }
+
+  static updateMacros() {
+    const macroGoal = document.getElementById('macroGoal').value;
+    const macroStyle = document.getElementById('macroStyle').value;
+    const macroResults = document.getElementById('macroResults');
+
+    // Mostrar/esconder configuração personalizada
+    const customMacros = document.getElementById('customMacros');
+    customMacros.style.display = macroStyle === 'custom' ? 'block' : 'none';
+
+    // Verificar se temos dados básicos
+    const pesoAtual = parseFloat(document.getElementById('currentWeight').value);
+    const altura = parseFloat(document.getElementById('height').value);
+    const idade = parseInt(document.getElementById('age').value);
+    const genero = document.getElementById('gender').value;
+    const fatorAtividade = parseFloat(document.getElementById('activity').value);
+    const deficitDiario = parseInt(document.getElementById('deficit').value);
+
+    if (!pesoAtual || !altura || !idade) {
+      macroResults.innerHTML = `
+        <p class="text-center text-muted" style="padding: 2rem;">
+          Configure seus dados na aba Calculadora primeiro para ver as recomendações de macros!
+        </p>
+      `;
+      return;
+    }
+
+    // Calcular calorias baseado no objetivo
+    const bmr = CalculationEngine.calculateBMR(pesoAtual, altura, idade, genero);
+    const tdee = bmr * fatorAtividade;
+    
+    let targetCalories;
+    let goalDescription;
+    
+    switch (macroGoal) {
+      case 'maintenance':
+        targetCalories = tdee;
+        goalDescription = 'manutenção';
+        break;
+      case 'cutting':
+        const pesoAlvo = parseFloat(document.getElementById('targetWeight').value) || pesoAtual - 5;
+        const isPerda = pesoAtual > pesoAlvo;
+        targetCalories = tdee - (isPerda ? deficitDiario : -deficitDiario);
+        goalDescription = `cutting (déficit de ${deficitDiario} kcal/dia)`;
+        break;
+      case 'bulking':
+        targetCalories = tdee + deficitDiario;
+        goalDescription = `bulking (superávit de ${deficitDiario} kcal/dia)`;
+        break;
+    }
+
+    // Obter percentuais dos macros
+    const macroPercentages = this.getMacroPercentages(macroStyle);
+    
+    // Validar percentuais customizados
+    if (macroStyle === 'custom') {
+      const proteinPercent = parseInt(document.getElementById('proteinPercent').value) || 30;
+      const fatPercent = parseInt(document.getElementById('fatPercent').value) || 35;
+      const carbPercent = parseInt(document.getElementById('carbPercent').value) || 35;
+      
+      const total = proteinPercent + fatPercent + carbPercent;
+      const warningElement = document.getElementById('percentageWarning');
+      
+      if (total !== 100) {
+        warningElement.style.display = 'block';
+        macroPercentages.protein = proteinPercent;
+        macroPercentages.fat = fatPercent;
+        macroPercentages.carb = carbPercent;
+      } else {
+        warningElement.style.display = 'none';
+        macroPercentages.protein = proteinPercent;
+        macroPercentages.fat = fatPercent;
+        macroPercentages.carb = carbPercent;
+      }
+    }
+
+    // Calcular gramas dos macros
+    const proteinGrams = Math.round((targetCalories * macroPercentages.protein / 100) / 4);
+    const fatGrams = Math.round((targetCalories * macroPercentages.fat / 100) / 9);
+    const carbGrams = Math.round((targetCalories * macroPercentages.carb / 100) / 4);
+
+    // Exibir resultados
+    macroResults.innerHTML = `
+      <div class="calories-info">
+        <h4>🎯 Suas Metas de ${goalDescription.charAt(0).toUpperCase() + goalDescription.slice(1)}</h4>
+        <p>
+          <strong>${Math.round(targetCalories)} calorias por dia</strong><br/>
+          TDEE: ${Math.round(tdee)} kcal | ${macroGoal === 'maintenance' ? 'Sem déficit/superávit' : 
+            (macroGoal === 'cutting' ? `Déficit: ${deficitDiario} kcal` : `Superávit: ${deficitDiario} kcal`)}
+        </p>
+      </div>
+
+      <div class="macro-grid">
+        <div class="macro-item">
+          <h5>🥩 Proteína</h5>
+          <div class="macro-value">${proteinGrams}<span class="macro-unit">g</span></div>
+          <div class="macro-percentage">${macroPercentages.protein}%</div>
+        </div>
+        
+        <div class="macro-item">
+          <h5>🥑 Gordura</h5>
+          <div class="macro-value">${fatGrams}<span class="macro-unit">g</span></div>
+          <div class="macro-percentage">${macroPercentages.fat}%</div>
+        </div>
+        
+        <div class="macro-item">
+          <h5>🍞 Carboidrato</h5>
+          <div class="macro-value">${carbGrams}<span class="macro-unit">g</span></div>
+          <div class="macro-percentage">${macroPercentages.carb}%</div>
+        </div>
+      </div>
+
+      <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 2rem; text-align: center;">
+        <small style="color: #6c757d;">
+          💡 <strong>Dica:</strong> 1g de proteína e carboidrato = 4 kcal | 1g de gordura = 9 kcal
+        </small>
+      </div>
+    `;
+  }
+
+  static getMacroPercentages(style) {
+    const styles = {
+      'balanced': { protein: 30, fat: 35, carb: 35 },
+      'lowcarb': { protein: 40, fat: 40, carb: 20 },
+      'highcarb': { protein: 30, fat: 20, carb: 50 },
+      'keto': { protein: 35, fat: 60, carb: 5 }
+    };
+    
+    return styles[style] || styles.balanced;
   }
 }
 
