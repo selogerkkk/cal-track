@@ -44,7 +44,9 @@ Uma aplicação web avançada para cálculo e acompanhamento de peso com anális
 - **Edição e exclusão** de registros individuais
 - **Observações diárias** personalizadas
 
-## 🚀 Como Usar
+## 🚀 Como 
+
+- Acesse https://selogerkkk.github.io/cal-track/
 
 ## 🏗️ Estrutura do Projeto
 
