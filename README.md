@@ -6,6 +6,10 @@ Uma aplicação web avançada para cálculo e acompanhamento de peso com anális
 ![Version](https://img.shields.io/badge/Version-2.0-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+## 🚀 Como usar
+
+- Acesse https://selogerkkk.github.io/cal-track/
+
 ## ✨ Funcionalidades
 
 ### 📊 Calculadora Avançada
@@ -43,10 +47,6 @@ Uma aplicação web avançada para cálculo e acompanhamento de peso com anális
 - **Exportação em CSV** para backup
 - **Edição e exclusão** de registros individuais
 - **Observações diárias** personalizadas
-
-## 🚀 Como 
-
-- Acesse https://selogerkkk.github.io/cal-track/
 
 ## 🏗️ Estrutura do Projeto
 
