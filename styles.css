@@ -613,4 +613,196 @@ button:active {
     flex-direction: column;
     gap: 1rem;
   }
+}
+
+/* ============================================================================
+   ANÁLISE DETALHADA - SIMILAR À IMAGEM TABELASCAL
+   ============================================================================ */
+
+.detailed-analysis {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e9ecef;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.analysis-card {
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.analysis-card h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Card de Calorias de Manutenção */
+.maintenance-card {
+  background: linear-gradient(135deg, #fff8e1 0%, #fff 100%);
+  border-color: #ffcc02;
+  text-align: center;
+}
+
+.big-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #f57c00;
+  line-height: 1;
+  margin: 0.5rem 0;
+}
+
+.weekly-calories {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #666;
+  margin-top: 1rem;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tabela de Atividades */
+.activity-comparison {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.activity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f3f4;
+  transition: background-color 0.2s;
+}
+
+.activity-row:last-child {
+  border-bottom: none;
+}
+
+.activity-row:hover {
+  background-color: #f8f9fa;
+}
+
+.activity-row.current-activity {
+  background-color: #e3f2fd;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.activity-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.activity-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.current-activity .activity-label,
+.current-activity .activity-value {
+  color: #1976d2;
+}
+
+/* Card IMC */
+.bmi-card {
+  background: linear-gradient(135deg, #e8f5e8 0%, #fff 100%);
+  border-color: #4caf50;
+}
+
+.imc-table {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.imc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #f1f3f4;
+  font-size: 0.9rem;
+}
+
+.imc-row:last-child {
+  border-bottom: none;
+}
+
+.imc-row.current-imc {
+  background-color: #c8e6c9;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+/* Card Peso Ideal */
+.ideal-weight-card {
+  background: linear-gradient(135deg, #f3e5f5 0%, #fff 100%);
+  border-color: #9c27b0;
+}
+
+.weight-formulas {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.formula-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.formula-row:last-child {
+  border-bottom: none;
+}
+
+.formula-name {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.formula-weight {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Responsividade para análise detalhada */
+@media (max-width: 768px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .big-number {
+    font-size: 2.5rem;
+  }
+  
+  .weekly-calories {
+    font-size: 1.4rem;
+  }
+  
+  .analysis-card {
+    padding: 1rem;
+  }
 } 

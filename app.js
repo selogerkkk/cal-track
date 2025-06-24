@@ -607,11 +607,11 @@ class UIManager {
     
     // Atualizar dados se necessário
     if (tabName === 'progress') {
-      this.updateProgress();
+      UIManager.updateProgress();
     } else if (tabName === 'history') {
-      this.loadHistory();
+      UIManager.loadHistory();
     } else if (tabName === 'macros') {
-      this.updateMacros();
+      AppController.updateMacros();
     }
   }
 
@@ -971,6 +971,112 @@ class AppController {
       </div>
       
       ${insights}
+
+      <!-- Seção de Análise Detalhada -->
+      <div class="detailed-analysis">
+        <div class="analysis-grid">
+          <!-- Card de Calorias de Manutenção -->
+          <div class="analysis-card maintenance-card">
+            <h4>Suas Calorias de Manutenção</h4>
+            <div class="big-number">${Math.round(tdee)}</div>
+            <div class="subtitle">calorias por dia</div>
+            <div class="weekly-calories">${Math.round(tdee * 7).toLocaleString()}</div>
+            <div class="subtitle">calorias por semana</div>
+          </div>
+
+          <!-- Tabela de Níveis de Atividade -->
+          <div class="analysis-card activity-table">
+            <h4>Comparação de Níveis de Atividade</h4>
+            <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">
+              Baseado na fórmula Mifflin-St Jeor. A tabela mostra a diferença se você tivesse selecionado um nível diferente.
+            </p>
+            <div class="activity-comparison">
+              <div class="activity-row">
+                <span class="activity-label">Taxa Metabólica Basal</span>
+                <span class="activity-value">${Math.round(bmr)} kcal/dia</span>
+              </div>
+              <div class="activity-row ${fatorAtividade === 1.2 ? 'current-activity' : ''}">
+                <span class="activity-label">Sedentário</span>
+                <span class="activity-value">${Math.round(bmr * 1.2)} kcal/dia</span>
+              </div>
+              <div class="activity-row ${fatorAtividade === 1.375 ? 'current-activity' : ''}">
+                <span class="activity-label">Exercício Leve</span>
+                <span class="activity-value">${Math.round(bmr * 1.375)} kcal/dia</span>
+              </div>
+              <div class="activity-row ${fatorAtividade === 1.55 ? 'current-activity' : ''}">
+                <span class="activity-label">Exercício Moderado</span>
+                <span class="activity-value">${Math.round(bmr * 1.55)} kcal/dia</span>
+              </div>
+              <div class="activity-row ${fatorAtividade === 1.725 ? 'current-activity' : ''}">
+                <span class="activity-label">Exercício Intenso</span>
+                <span class="activity-value">${Math.round(bmr * 1.725)} kcal/dia</span>
+              </div>
+              <div class="activity-row ${fatorAtividade === 1.9 ? 'current-activity' : ''}">
+                <span class="activity-label">Atleta</span>
+                <span class="activity-value">${Math.round(bmr * 1.9)} kcal/dia</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção de IMC e Peso Ideal -->
+        <div class="analysis-grid">
+          <!-- IMC Score -->
+          <div class="analysis-card bmi-card">
+            <h4>Score IMC: ${CalculationEngine.calculateIMC(pesoAtual, altura).toFixed(1)}</h4>
+            <p style="margin-bottom: 1rem;">
+              Seu IMC é <strong>${CalculationEngine.calculateIMC(pesoAtual, altura).toFixed(1)}</strong>, 
+              o que significa que você está classificado como <strong>${AppController.getIMCCategory(CalculationEngine.calculateIMC(pesoAtual, altura))}</strong>.
+            </p>
+            <div class="imc-table">
+              <div class="imc-row ${CalculationEngine.calculateIMC(pesoAtual, altura) < 18.5 ? 'current-imc' : ''}">
+                <span>18.5 ou menos</span>
+                <span>Abaixo do peso</span>
+              </div>
+              <div class="imc-row ${CalculationEngine.calculateIMC(pesoAtual, altura) >= 18.5 && CalculationEngine.calculateIMC(pesoAtual, altura) < 25 ? 'current-imc' : ''}">
+                <span>18.5 - 24.99</span>
+                <span>Peso Normal</span>
+              </div>
+              <div class="imc-row ${CalculationEngine.calculateIMC(pesoAtual, altura) >= 25 && CalculationEngine.calculateIMC(pesoAtual, altura) < 30 ? 'current-imc' : ''}">
+                <span>25 - 29.99</span>
+                <span>Sobrepeso</span>
+              </div>
+              <div class="imc-row ${CalculationEngine.calculateIMC(pesoAtual, altura) >= 30 ? 'current-imc' : ''}">
+                <span>30+</span>
+                <span>Obesidade</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Peso Ideal -->
+          <div class="analysis-card ideal-weight-card">
+            <h4>Peso Ideal: ${AppController.calculateIdealWeightRange(altura)}</h4>
+            <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">
+              Seu peso ideal é <strong>estimado</strong> baseado em várias fórmulas listadas abaixo. 
+              Essas fórmulas são baseadas na sua altura e representam médias, então não as leve 
+              <em>muito a sério</em>, <strong>especialmente se você faz musculação</strong>.
+            </p>
+            <div class="weight-formulas">
+              <div class="formula-row">
+                <span class="formula-name">G.J. Hamwi (1964)</span>
+                <span class="formula-weight">${AppController.calculateHamwi(altura, genero)} kg</span>
+              </div>
+              <div class="formula-row">
+                <span class="formula-name">B.J. Devine (1974)</span>
+                <span class="formula-weight">${AppController.calculateDevine(altura, genero)} kg</span>
+              </div>
+              <div class="formula-row">
+                <span class="formula-name">J.D. Robinson (1983)</span>
+                <span class="formula-weight">${AppController.calculateRobinson(altura, genero)} kg</span>
+              </div>
+              <div class="formula-row">
+                <span class="formula-name">D.R. Miller (1983)</span>
+                <span class="formula-weight">${AppController.calculateMiller(altura, genero)} kg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       
       <small style="color: #6c757d; font-style: italic; display: block; margin-top: 1rem;">
         ⚠️ Esta projeção é uma estimativa baseada em modelos científicos. Resultados podem variar devido a fatores individuais, adaptações metabólicas e aderência ao plano.
@@ -978,6 +1084,54 @@ class AppController {
     `;
 
     output.style.display = 'block';
+  }
+
+  static getIMCCategory(imc) {
+    if (imc < 18.5) return 'Abaixo do peso';
+    if (imc < 25) return 'Peso Normal';
+    if (imc < 30) return 'Sobrepeso';
+    return 'Obesidade';
+  }
+
+  static calculateIdealWeightRange(altura) {
+    const hamwi = AppController.calculateHamwi(altura, 'masculino');
+    const devine = AppController.calculateDevine(altura, 'masculino');
+    const robinson = AppController.calculateRobinson(altura, 'masculino');
+    const miller = AppController.calculateMiller(altura, 'masculino');
+    
+    const weights = [hamwi, devine, robinson, miller];
+    const min = Math.min(...weights);
+    const max = Math.max(...weights);
+    
+    return `${Math.round(min)}-${Math.round(max)} kg`;
+  }
+
+  static calculateHamwi(altura, genero) {
+    const heightInches = altura / 2.54;
+    const baseWeight = genero === 'masculino' ? 48 : 45.5;
+    const increment = genero === 'masculino' ? 2.7 : 2.2;
+    return Math.round(baseWeight + (heightInches - 60) * increment);
+  }
+
+  static calculateDevine(altura, genero) {
+    const heightInches = altura / 2.54;
+    const baseWeight = genero === 'masculino' ? 50 : 45.5;
+    const increment = genero === 'masculino' ? 2.3 : 2.3;
+    return Math.round(baseWeight + (heightInches - 60) * increment);
+  }
+
+  static calculateRobinson(altura, genero) {
+    const heightInches = altura / 2.54;
+    const baseWeight = genero === 'masculino' ? 52 : 49;
+    const increment = genero === 'masculino' ? 1.9 : 1.7;
+    return Math.round(baseWeight + (heightInches - 60) * increment);
+  }
+
+  static calculateMiller(altura, genero) {
+    const heightInches = altura / 2.54;
+    const baseWeight = genero === 'masculino' ? 56.2 : 53.1;
+    const increment = genero === 'masculino' ? 1.41 : 1.36;
+    return Math.round(baseWeight + (heightInches - 60) * increment);
   }
 
   static updateMacros() {
@@ -1091,7 +1245,7 @@ class AppController {
         </div>
       </div>
 
-      <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 2rem; text-align: center;">
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 2rem; text-align: center;">
         <small style="color: #6c757d;">
           💡 <strong>Dica:</strong> 1g de proteína e carboidrato = 4 kcal | 1g de gordura = 9 kcal
         </small>
