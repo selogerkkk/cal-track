@@ -715,6 +715,12 @@ class ChartManager {
 // ============================================================================
 
 class AppController {
+  // Helper para formatar data no formato YYYY-MM-DD sem problemas de timezone
+  static formatDateToString(date) {
+    return date.getFullYear() + '-' + 
+           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(date.getDate()).padStart(2, '0');
+  }
   static async initialize() {
     // Inicializar banco de dados
     await DatabaseManager.initialize();
@@ -726,7 +732,7 @@ class AppController {
     this.setupEventListeners();
     
     // Definir data atual
-    document.getElementById('dailyDate').valueAsDate = new Date();
+    document.getElementById('dailyDate').value = this.formatDateToString(new Date());
     
     // Atualizar interface
     UIManager.updateProgress();
@@ -796,15 +802,15 @@ class AppController {
       document.getElementById('dailyCalories').value = '';
       document.getElementById('dailyActivity').value = '';
       document.getElementById('dailyNotes').value = '';
-      document.getElementById('dailyDate').valueAsDate = new Date();
+      document.getElementById('dailyDate').value = this.formatDateToString(new Date());
 
       // Atualizar displays
       UIManager.updateProgress();
       UIManager.loadHistory();
       
       // Atualizar peso atual na calculadora se for de hoje
-      const today = new Date().toISOString().split('T')[0];
-      if (entryData.date === today) {
+      const todayString = this.formatDateToString(new Date());
+      if (entryData.date === todayString) {
         document.getElementById('currentWeight').value = entryData.weight;
         this.calcular();
       }
