@@ -565,7 +565,7 @@ class UIManager {
       return `
         <div class="history-item">
           <div>
-            <strong>${new Date(entry.date).toLocaleDateString('pt-BR')}</strong>
+            <strong>${AppController.formatDateStringToLocal(entry.date)}</strong>
             <div class="text-muted" style="font-size: 0.9rem;">
               ${entry.notes || 'Sem observações'}${caloriesInfo}${activityInfo}
             </div>
@@ -720,6 +720,13 @@ class AppController {
     return date.getFullYear() + '-' + 
            String(date.getMonth() + 1).padStart(2, '0') + '-' + 
            String(date.getDate()).padStart(2, '0');
+  }
+
+  // Helper para converter string de data YYYY-MM-DD para data local formatada em pt-BR
+  static formatDateStringToLocal(dateString) {
+    const [year, month, day] = dateString.split('-');
+    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return localDate.toLocaleDateString('pt-BR');
   }
   static async initialize() {
     // Inicializar banco de dados
